@@ -3,7 +3,7 @@
 /*
 Plugin Name: WordPress Server Auth
 Description: Restricts WP Admin Access to a specific port, to allow Proper apache configuration
-Author: Ingenuity Design
+Author: Stephen Parente
 Version: 1
 */
 
@@ -21,7 +21,7 @@ define('PRIVILEGED_PORT', 8086);
 
 if ( (is_admin() && !defined('DOING_AJAX')) ||
       in_array( $GLOBALS['pagenow'], array( 'wp-login.php', 'wp-register.php' ) )) {
-    
+
     if ($_SERVER['SERVER_PORT'] != PRIVILEGED_PORT) {
         //redirect to port 8080
         header(sprintf("Location: %s", wpsa_get_url_on_port(PRIVILEGED_PORT)));
