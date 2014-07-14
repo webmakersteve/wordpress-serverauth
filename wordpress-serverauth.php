@@ -17,10 +17,14 @@ function wpsa_get_url_on_port( $port=8086 ) {
     return $pageURL;
 }
 
-if (is_admin() && !defined('DOING_AJAX')) {
-    if ($_SERVER['SERVER_PORT'] != 8080) {
+define('PRIVILEGED_PORT', 8086);
+
+if ( (is_admin() && !defined('DOING_AJAX')) ||
+      in_array( $GLOBALS['pagenow'], array( 'wp-login.php', 'wp-register.php' ) )) {
+    
+    if ($_SERVER['SERVER_PORT'] != PRIVILEGED_PORT) {
         //redirect to port 8080
-        header(sprintf("Location: %s", wpsa_get_url_on_port()));
+        header(sprintf("Location: %s", wpsa_get_url_on_port(PRIVILEGED_PORT)));
         exit;
     }
 }
