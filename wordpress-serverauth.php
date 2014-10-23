@@ -68,16 +68,15 @@ class WPSA_Plugin {
 
       if (!$this->isOnPrivilegedPort()) {
         //redirect to port 8080 for the redirection mechanism
-        if ($this->opts->isRedirectMode()) {
-          wp_redirect( $this->getUrlOnPort(admin_url(), $this->port));
-          exit;
-        } elseif ($this->opts->is404Mode()) {
-          //otherwise, for the 404 route, just throw a 404.
-          return $this->throw404();
-        }
 
-        return false;
-
+          if ($this->opts->is404Mode()) {
+              //otherwise, for the 404 route, just throw a 404.
+              return $this->throw404();
+          } else {
+              wp_redirect( $this->getUrlOnPort(admin_url(), $this->port));
+              exit;
+          }
+          
       } else {
         //we're on the privileged port so we're good
         return false;
