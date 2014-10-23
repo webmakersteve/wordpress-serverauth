@@ -176,6 +176,14 @@ class WPSA_SettingsInterface {
         if (isset( $input['ssl_mode']) && in_array( $input['ssl_mode'], array(0,1)))
             $new_input['ssl_mode'] = ( $input['ssl_mode'] );
 
+        if (isset( $input['servers'] )) {
+            //easily the most complex of this but let's try to be pros
+            foreach( $input['servers'] as $k => $server ) {
+                $input['servers'][$k]['ip'] = $k;
+            }
+            $new_input['servers'] = $input['servers'];
+        }
+
         return $new_input;
     }
 

@@ -216,13 +216,13 @@ class WPSA_Options {
 
     public function getDefaultServer() {
         $servers = $this->getServers();
-        if ($servers['*']) return $servers['*'];
+        if ($servers['default']) return $servers['default'];
         else return new WPSA_Server_Options();
     }
 
     public function getServer( $ip ) {
         $servers = $this->getServers();
-        return $servers[$ip] ? new WPSA_Server_Options($servers[$ip]) : new WPSA_Server_Options();
+        return $servers[$ip];
     }
 
 }
@@ -239,7 +239,7 @@ class WPSA_Server_Options {
             'ip' => 'default',
             'on' => true,
             'allow_admin' => true,
-            'site_url' => ''
+            'url' => ''
         );
         foreach($data as $k=>$v) {
             $defaults[$k] = $v;
@@ -248,6 +248,7 @@ class WPSA_Server_Options {
         $this->ip = $defaults['ip'];
         $this->on = $defaults['on'];
         $this->allow_admin = $defaults['allow_admin'];
+        $this->site_url = $defaults['url'];
 
     }
 
@@ -268,7 +269,7 @@ class WPSA_Server_Options {
     }
 
     public function isDefaultServer() {
-        return $this->ip == '*';
+        return $this->ip == 'default';
     }
 
     public function getSiteURL() {
