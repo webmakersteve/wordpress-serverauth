@@ -45,17 +45,20 @@ class WPSA_Plugin {
     return new WPSA_SettingsInterface();
   }
 
-  private function getUrlOnPort($port=false,$path=true) {
+  private function getUrlOnPort($url, $port=false,$path=true) {
     if (!$port) {
       $port = $this->port;
     }
 
-    $pageURL = 'http';
-    if (is_ssl()) $pageURL .= 's';
-    $pageURL .= "://";
-    $pageURL .= sprintf("%s:%d", $_SERVER['SERVER_NAME'], $port);
-    if ($path) $pageURL .= $_SERVER['REQUEST_URI'];
-    return $pageURL;
+      $parsed = parse_url($url);
+      $parsed['port'] = $port;
+      if (is_ssl()) {
+          $parsed['scheme'] = 'https';
+      }
+
+      $pageURL = $this->buildUrl($parsed, true);
+
+      return $pageURL;
 
   }
 
@@ -66,7 +69,7 @@ class WPSA_Plugin {
       if (!$this->isOnPrivilegedPort()) {
         //redirect to port 8080 for the redirection mechanism
         if ($this->opts->isRedirectMode()) {
-          wp_redirect( $this->getUrlOnPort());
+          wp_redirect( $this->getUrlOnPort(admin_url(), $this->port));
           exit;
         } elseif ($this->opts->is404Mode()) {
           //otherwise, for the 404 route, just throw a 404.
@@ -127,12 +130,62 @@ class WPSA_Plugin {
     //check if we are on a weird port
     if ($port = $_SERVER['SERVER_PORT']) {
          if ($port == $this->port) {
-             return $this->getUrlOnPort($port, false);
+             return $this->getUrlOnPort($url, $port, false);
              //we just want to get the current url instead
          }
     }
     return $url;
   }
+
+    private function buildUrl( $parts, $encode=true ) {
+        if ( $encode )
+        {
+            if ( isset( $parts['user'] ) )
+                $parts['user']     = rawurlencode( $parts['user'] );
+            if ( isset( $parts['pass'] ) )
+                $parts['pass']     = rawurlencode( $parts['pass'] );
+            if ( isset( $parts['host'] ) &&
+                !preg_match( '!^(\[[\da-f.:]+\]])|([\da-f.:]+)$!ui', $parts['host'] ) )
+                $parts['host']     = rawurlencode( $parts['host'] );
+            if ( !empty( $parts['path'] ) )
+                $parts['path']     = preg_replace( '!%2F!ui', '/',
+                    rawurlencode( $parts['path'] ) );
+            if ( isset( $parts['query'] ) )
+                $parts['query']    = rawurlencode( $parts['query'] );
+            if ( isset( $parts['fragment'] ) )
+                $parts['fragment'] = rawurlencode( $parts['fragment'] );
+        }
+
+        $url = '';
+        if ( !empty( $parts['scheme'] ) )
+            $url .= $parts['scheme'] . ':';
+        if ( isset( $parts['host'] ) )
+        {
+            $url .= '//';
+            if ( isset( $parts['user'] ) )
+            {
+                $url .= $parts['user'];
+                if ( isset( $parts['pass'] ) )
+                    $url .= ':' . $parts['pass'];
+                $url .= '@';
+            }
+            if ( preg_match( '!^[\da-f]*:[\da-f.:]+$!ui', $parts['host'] ) )
+                $url .= '[' . $parts['host'] . ']'; // IPv6
+            else
+                $url .= $parts['host'];             // IPv4 or name
+            if ( isset( $parts['port'] ) )
+                $url .= ':' . $parts['port'];
+            if ( !empty( $parts['path'] ) && $parts['path'][0] != '/' )
+                $url .= '/';
+        }
+        if ( !empty( $parts['path'] ) )
+            $url .= $parts['path'];
+        if ( isset( $parts['query'] ) )
+            $url .= '?' . $parts['query'];
+        if ( isset( $parts['fragment'] ) )
+            $url .= '#' . $parts['fragment'];
+        return $url;
+    }
 
 }
 

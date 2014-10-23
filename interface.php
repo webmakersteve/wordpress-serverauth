@@ -155,7 +155,9 @@ class WPSA_SettingsInterface {
      */
     public function print_section_info()
     {
-        print 'Please enter your configuration settings for the plugin.';
+        print 'Please enter your configuration settings for the plugin. Below are some wordpress values that are being filtered.<br>If any of these seem wrong please report them to the plugin author<br>';
+        print 'Wordpress site_url: ' . site_url() . '<br>';
+        print 'Wordpress admin_url: ' . admin_url();
     }
 
     /**
