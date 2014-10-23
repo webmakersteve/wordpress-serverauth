@@ -4,8 +4,17 @@
 Plugin Name: WordPress Server Auth
 Description: Restricts WP Admin Access to a specific port, to allow Proper apache configuration
 Author: Stephen Parente
-Version: 1
+Version: 1.1
 */
+
+//let's bootstrap it
+require('settings.php');
+
+if (is_admin()) {
+    require('interface.php');
+}
+
+$options = WPSA_Options::getInstance();
 
 //We just use redirects!
 $GLOBALS['wpsa_bypass'] = false;
@@ -13,7 +22,7 @@ define('WPSA_PRIVILEDGED_PORT', 8080);
 
 function wpsa_get_url_on_port( $port=false, $path=true ) {
     if (!$port) $port = WPSA_PRIVILEGED_PORT;
-    
+
     $pageURL = 'http';
     if ($_SERVER['HTTPS'] == 'on') $pageURL .= 's';
     $pageURL .= "://";
@@ -29,7 +38,7 @@ function wpsa_enforce() {
         if (!wpsa_is_on_privileged_port()) {
             //redirect to port 8080 for the redirection mechanism
             //header(sprintf("Location: %s", wpsa_get_url_on_port(WPSA_PRIVILEDGED_PORT)));
-            
+
             //otherwise, for the 404 route, just throw a 404.
             wpsa_throw_404();
         }
