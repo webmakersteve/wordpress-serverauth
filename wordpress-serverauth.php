@@ -51,14 +51,16 @@ function wpsa_should_protect() {
 
 function wpsa_throw_404() {
     global $wp_query;
-    header("HTTP/1.0 404");
+    wpsa_404_header();
     if ($wp_query)
         $wp_query->set_404();
-    require get_stylesheet_directory() . '/404.php';
+    require get_404_template();
     exit;
 }
 
-
+function wpsa_404_header() {
+	header("HTTP/1.0 404 Not Found");
+}
 
 function wordpress_serverauth_activate() {
     global $wpsa_bypass;
