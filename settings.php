@@ -57,7 +57,7 @@ class WPSA_Options {
      */
 
     public static function getInstance() {
-        if (self::$instance == NULL) self::$instance = new Options();
+        if (self::$instance == NULL) self::$instance = new WPSA_Options();
         return self::$instance;
     }
 

@@ -22,7 +22,7 @@ class WPSA_Plugin {
     }
 
     $this->opts = WPSA_Options::getInstance();
-    $this->port = $wpsa_options->getPort();
+    $this->port = $this->opts->getPort();
 
     register_activation_hook( __FILE__, array($this, 'activate'));
     if ($this->opts->isOn()) {
@@ -34,6 +34,7 @@ class WPSA_Plugin {
 
   private function loadInterface() {
     require('interface.php');
+    return new WPSA_SettingsInterface();
   }
 
   private function getUrlOnPort($port=false,$path=true) {

@@ -57,7 +57,7 @@ class WPSA_SettingsInterface {
         );
     }
 
-    const _GRP = 'wp_serverauth'
+    const _GRP = 'wp_serverauth';
     const _ID = 'wp_serverauthops';
 
     /**
@@ -162,7 +162,7 @@ class WPSA_SettingsInterface {
      * Get the settings option array and print one of its values
      */
 
-    public function id_number_callback() {
+    public function port_number_callback() {
         printf(
             '<input type="text" id="id_port" name="'.self::_ID.'[id_port]" value="%s" />',
             isset( $this->options['id_port'] ) ? esc_attr( $this->options['id_port']) : ''
