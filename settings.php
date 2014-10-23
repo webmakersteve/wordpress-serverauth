@@ -178,4 +178,23 @@ class WPSA_Options {
         return false;
     }
 
+    /**
+     * Checks if the listening port wants SSL
+     * @return bool True if port is HTTPS, false otherwise
+     */
+
+    public function isSSLOn() {
+        if (isset($this->options['ssl_mode']) && $this->options['ssl_mode'] == 1) return true;
+        return false;
+    }
+
+    /**
+     * Checks if the listening port does not want SSL
+     * @return bool True if port is HTTP, false otherwise
+     */
+
+    public function isSSLOff() {
+        return !$this->isSSLOn();
+    }
+
 }

@@ -54,7 +54,7 @@ class WPSA_Plugin {
 
       $parsed = parse_url($url);
       $parsed['port'] = $port;
-      if (is_ssl()) {
+      if (is_ssl() && $this->opts->isSSLOn()) {
           $parsed['scheme'] = 'https';
       }
 

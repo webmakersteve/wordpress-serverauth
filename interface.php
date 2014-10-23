@@ -97,7 +97,7 @@ class WPSA_SettingsInterface {
 
         add_settings_section(
             'port', // ID
-            'Listening Port', // Title
+            'Listening Port Configuration', // Title
             array( $this, 'print_section_info' ), // Callback
             self::_GRP // Page
         );
@@ -111,7 +111,7 @@ class WPSA_SettingsInterface {
          );
 
 
-		    add_settings_field(
+        add_settings_field(
             'activate',
             'Activation',
             array( $this, 'activate' ),
@@ -197,17 +197,15 @@ class WPSA_SettingsInterface {
         printf(
             '404 <input type="radio" id="protection" name="'.self::_ID.'[protection]" value="1" %s/> / Redirect <input type="radio" id="protection" name="'.self::_ID.'[protection]" value="0" %s/>',
             (isset( $this->options['protection'])  && $this->options['protection'] == 1) ?'checked' : '',
-      (!isset( $this->options['protection']) || $this->options['protection'] == 0) ?'checked' : '',
-      (isset( $this->options['protection']) && $this->options['protection'] == 2) ?'checked' : ''
+      (!isset( $this->options['protection']) || $this->options['protection'] == 0) ?'checked' : ''
         );
     }
     
     public function ssl_mode_callback() {
         printf(
-            '404 <input type="radio" id="ssl_mode" name="'.self::_ID.'[ssl_mode]" value="1" %s/> / Redirect <input type="radio" id="ssl_mode" name="'.self::_ID.'[ssl_mode]" value="0" %s/>',
+            'Yes <input type="radio" id="ssl_mode" name="'.self::_ID.'[ssl_mode]" value="1" %s/> / No <input type="radio" id="ssl_mode" name="'.self::_ID.'[ssl_mode]" value="0" %s/>',
             (isset( $this->options['ssl_mode'])  && $this->options['ssl_mode'] == 1) ?'checked' : '',
-            (!isset( $this->options['ssl_mode']) || $this->options['ssl_mode'] == 0) ?'checked' : '',
-            (isset( $this->options['ssl_mode']) && $this->options['ssl_mode'] == 2) ?'checked' : ''
+            (!isset( $this->options['ssl_mode']) || $this->options['ssl_mode'] == 0) ?'checked' : ''
         );
     }
 
