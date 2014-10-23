@@ -238,7 +238,6 @@ class WPSA_SettingsInterface {
 
         //this is done for as many IPs as there are in addition to the current IP address
         $servers = $this->opts->getServers();
-        print_r($servers);
 
         $def = $this->opts->getDefaultServer();
         $serv = $this->opts->getThisServer();
@@ -247,9 +246,15 @@ class WPSA_SettingsInterface {
         <?php
 
         $this->build_server_form( $def, true );
-        $this->build_server_form( $serv, true );
 
-        foreach( $servers as $server ) {
+        ?>
+        <h4>This Box</h4>
+        <?php
+        $this->build_server_form( $serv, true );
+        ?>
+        <h4>Other Boxes</h4>
+        <?php
+        foreach( $servers as $ip => $server ) {
             $this->build_server_form( $server );
         }
 
@@ -260,9 +265,21 @@ class WPSA_SettingsInterface {
         // If override is false we want to throw out special ones
         if (!$override) {
             if ($server->isDefaultServer() || $server->isThisServer()) return;
+        } else {
+            print '<h5>' . $server->getIP() . '</h5>';
         }
-
-        echo $server->getIP();
+        ?>
+        <div class="server">
+            <!-- 2 options: Allow Admin or Redirect -->
+            <?php
+            printf(
+                '<strong>Allow Admin:</strong><br>Yes <input type="radio" id="ssl_mode" name="'.self::_ID.'[ssl_mode]" value="1" %s/> / No <input type="radio" id="ssl_mode" name="'.self::_ID.'[ssl_mode]" value="0" %s/>',
+                (isset( $this->options['ssl_mode'])  && $this->options['ssl_mode'] == 1) ?'checked' : '',
+                (!isset( $this->options['ssl_mode']) || $this->options['ssl_mode'] == 0) ?'checked' : ''
+            );
+            ?>
+        </div>
+        <?php
 
     }
 
