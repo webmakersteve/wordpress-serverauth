@@ -209,7 +209,9 @@ class WPSA_Options {
     }
 
     public function getThisServer() {
-        return $this->getServer($_SERVER['REMOTE_ADDR']);
+        $server = $this->getServer($_SERVER['REMOTE_ADDR']);
+        $server->setIP($_SERVER['REMOTE_ADDR']);
+        return $server;
     }
 
     public function getDefaultServer() {
@@ -230,12 +232,14 @@ class WPSA_Server_Options {
     private $ip;
     private $on;
     private $allow_admin;
+    private $site_url;
 
     public function __construct($data=null) {
         $defaults = array(
-            'ip' => '*',
+            'ip' => 'default',
             'on' => true,
-            'allow_admin' => true
+            'allow_admin' => true,
+            'site_url' => ''
         );
         foreach($data as $k=>$v) {
             $defaults[$k] = $v;
@@ -265,5 +269,13 @@ class WPSA_Server_Options {
 
     public function isDefaultServer() {
         return $this->ip == '*';
+    }
+
+    public function getSiteURL() {
+        return $this->site_url ? $this->site_url : '';
+    }
+
+    public function setIP($ip) {
+        $this->ip = $ip;
     }
 }

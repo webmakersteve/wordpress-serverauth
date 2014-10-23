@@ -254,8 +254,15 @@ class WPSA_SettingsInterface {
         ?>
         <h4>Other Boxes</h4>
         <?php
+        $i = 0;
         foreach( $servers as $ip => $server ) {
-            $this->build_server_form( $server );
+            if ($this->build_server_form( $server )) {
+                $i++;
+            }
+        }
+
+        if ($i == 0) {
+            print '<p>There are no other configured boxes. Log in here with one and you can add settings for it.</p>';
         }
 
     }
@@ -264,7 +271,7 @@ class WPSA_SettingsInterface {
 
         // If override is false we want to throw out special ones
         if (!$override) {
-            if ($server->isDefaultServer() || $server->isThisServer()) return;
+            if ($server->isDefaultServer() || $server->isThisServer()) return false;
             print '<h5>' . $server->getIP() . '</h5>';
         }
         $s = self::_ID . '[servers][' . $server->getIP() . ']';
@@ -274,22 +281,26 @@ class WPSA_SettingsInterface {
             <div class="server-option">
             <?php
             printf(
-                '<strong>Allow Admin:</strong><br>Yes <input type="radio" id="ssl_mode" name="'.$s.'[admin]" value="1" %s/> / No <input type="radio" id="ssl_mode" name="'.$s.'[admin]" value="0" %s/>',
-                (isset( $this->options['ssl_mode'])  && $this->options['servers'] == 1) ?'checked' : '',
-                (!isset( $this->options['ssl_mode']) || $this->options['servers'] == 0) ?'checked' : ''
+                '<strong>Allow Admin:</strong><br>Yes <input type="radio" name="'.$s.'[admin]" value="1" %s/> / No <input type="radio" id="ssl_mode" name="'.$s.'[admin]" value="0" %s/>',
+                ($server->isAdminAllowed()) ?'checked' : '',
+                (!$server->isAdminAllowed()) ?'checked' : ''
             );
             ?>
             </div>
             <div class="server-option">
                 <?php
                 printf(
-                    '<input type="text" id="id_port" name="'.$s.'[url]" value="%s" />',
-                    isset( $this->options['id_port'] ) ? esc_attr( $this->options['id_port']) : ''
+                    '<strong>Site URL: </strong><br><input class="widefat" type="text" placeholder="%s" name="%s[url]" value="%s" />',
+                    site_url(),
+                    $s,
+                    $server->getSiteURL()
                 );
                 ?>
             </div>
         </div>
         <?php
+
+        return true;
 
     }
 
