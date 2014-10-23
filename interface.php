@@ -188,9 +188,4 @@ class WPSA_SettingsInterface {
         );
     }
 
-
-
-	private static $message;
-
-
 }

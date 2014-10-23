@@ -25,12 +25,20 @@ class WPSA_Plugin {
     $this->port = $this->opts->getPort();
 
     register_activation_hook( __FILE__, array($this, 'activate'));
+
     if ($this->opts->isOn()) {
         add_filter( 'site_url' , array($this, 'filterSiteUrl') );
         add_action('wp_loaded', array($this, 'enforce') );
+        add_filter( 'redirect_canonical', array($this, 'filterRedirect'), 10, 2);
+        remove_filter('template_redirect', 'redirect_canonical');
     }
 
   }
+
+    public function filterRedirect($redirect_url, $requested_url) {
+        //return false; //deny it
+        return $redirect_url; //allow it
+    }
 
   private function loadInterface() {
     require('interface.php');
@@ -43,7 +51,7 @@ class WPSA_Plugin {
     }
 
     $pageURL = 'http';
-    if ($_SERVER['HTTPS'] == 'on') $pageURL .= 's';
+    if (is_ssl()) $pageURL .= 's';
     $pageURL .= "://";
     $pageURL .= sprintf("%s:%d", $_SERVER['SERVER_NAME'], $port);
     if ($path) $pageURL .= $_SERVER['REQUEST_URI'];
