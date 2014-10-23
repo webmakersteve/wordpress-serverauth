@@ -248,7 +248,7 @@ class WPSA_SettingsInterface {
         $this->build_server_form( $def, true );
 
         ?>
-        <h4>This Box</h4>
+        <h4>This Box (<?php echo $_SERVER['REMOTE_ADDR']; ?>)</h4>
         <?php
         $this->build_server_form( $serv, true );
         ?>
@@ -265,19 +265,29 @@ class WPSA_SettingsInterface {
         // If override is false we want to throw out special ones
         if (!$override) {
             if ($server->isDefaultServer() || $server->isThisServer()) return;
-        } else {
             print '<h5>' . $server->getIP() . '</h5>';
         }
+        $s = self::_ID . '[servers][' . $server->getIP() . ']';
         ?>
         <div class="server">
             <!-- 2 options: Allow Admin or Redirect -->
+            <div class="server-option">
             <?php
             printf(
-                '<strong>Allow Admin:</strong><br>Yes <input type="radio" id="ssl_mode" name="'.self::_ID.'[ssl_mode]" value="1" %s/> / No <input type="radio" id="ssl_mode" name="'.self::_ID.'[ssl_mode]" value="0" %s/>',
-                (isset( $this->options['ssl_mode'])  && $this->options['ssl_mode'] == 1) ?'checked' : '',
-                (!isset( $this->options['ssl_mode']) || $this->options['ssl_mode'] == 0) ?'checked' : ''
+                '<strong>Allow Admin:</strong><br>Yes <input type="radio" id="ssl_mode" name="'.$s.'[admin]" value="1" %s/> / No <input type="radio" id="ssl_mode" name="'.$s.'[admin]" value="0" %s/>',
+                (isset( $this->options['ssl_mode'])  && $this->options['servers'] == 1) ?'checked' : '',
+                (!isset( $this->options['ssl_mode']) || $this->options['servers'] == 0) ?'checked' : ''
             );
             ?>
+            </div>
+            <div class="server-option">
+                <?php
+                printf(
+                    '<input type="text" id="id_port" name="'.$s.'[url]" value="%s" />',
+                    isset( $this->options['id_port'] ) ? esc_attr( $this->options['id_port']) : ''
+                );
+                ?>
+            </div>
         </div>
         <?php
 
