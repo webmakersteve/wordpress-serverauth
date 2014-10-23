@@ -197,4 +197,73 @@ class WPSA_Options {
         return !$this->isSSLOn();
     }
 
+    public function getServers() {
+        if (isset($this->options['servers']) && $this->options['servers']) {
+            $servers = $this->options['servers'];
+            $ret = array();
+            foreach ($servers as $server) {
+                $ret[$server['ip']] = new WPSA_Server_Options($server);
+            }
+            return $ret;
+        } else return array();
+    }
+
+    public function getThisServer() {
+        return $this->getServer($_SERVER['REMOTE_ADDR']);
+    }
+
+    public function getDefaultServer() {
+        $servers = $this->getServers();
+        if ($servers['*']) return $servers['*'];
+        else return new WPSA_Server_Options();
+    }
+
+    public function getServer( $ip ) {
+        $servers = $this->getServers();
+        return $servers[$ip] ? new WPSA_Server_Options($servers[$ip]) : new WPSA_Server_Options();
+    }
+
+}
+
+class WPSA_Server_Options {
+
+    private $ip;
+    private $on;
+    private $allow_admin;
+
+    public function __construct($data=null) {
+        $defaults = array(
+            'ip' => '*',
+            'on' => true,
+            'allow_admin' => true
+        );
+        foreach($data as $k=>$v) {
+            $defaults[$k] = $v;
+        }
+
+        $this->ip = $defaults['ip'];
+        $this->on = $defaults['on'];
+        $this->allow_admin = $defaults['allow_admin'];
+
+    }
+
+    public function isAdminAllowed() {
+        return $this->allow_admin == true;
+    }
+
+    public function isOn() {
+        return $this->on == true;
+    }
+
+    public function getIP() {
+        return $this->ip;
+    }
+
+    public function isThisServer() {
+        return $this->ip == $_SERVER['REMOTE_ADDR'];
+    }
+
+    public function isDefaultServer() {
+        return $this->ip == '*';
+    }
 }

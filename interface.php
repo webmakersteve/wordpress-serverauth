@@ -31,6 +31,7 @@ class WPSA_SettingsInterface {
      * Holds the values to be used in the fields callbacks
      */
     private $options;
+    private $opts;
 
     /**
      * Start up
@@ -66,11 +67,13 @@ class WPSA_SettingsInterface {
     public function create_admin_page()
     {
         // Set class property
-        $this->options = WPSA_Options::getInstance()->toArray();
+        $o = WPSA_Options::getInstance();
+        $this->options = $o->toArray();
+        $this->opts = $o;
         ?>
         <div class="wrap">
             <?php screen_icon(); ?>
-            <h2>SSO Settings</h2>
+            <h2>Server Security Settings</h2>
             <form method="post" enctype="multipart/form-data" action="options.php">
             <?php
                 // This prints out all hidden setting fields
@@ -114,7 +117,7 @@ class WPSA_SettingsInterface {
         add_settings_field(
             'activate',
             'Activation',
-            array( $this, 'activate' ),
+            array( $this, 'activate_callback' ),
             self::_GRP,
             'port'
         );
@@ -133,6 +136,21 @@ class WPSA_SettingsInterface {
             array( $this, 'ssl_mode_callback' ),
             self::_GRP,
             'port'
+        );
+
+        add_settings_section(
+            'ip', // ID
+            'Individual Servers Configuration', // Title
+            array( $this, 'print_section_servers' ), // Callback
+            self::_GRP // Page
+        );
+
+        add_settings_field(
+            'servers',
+            'Server Configurations',
+            array( $this, 'servers_callback' ),
+            self::_GRP,
+            'ip'
         );
 
     }
@@ -166,10 +184,17 @@ class WPSA_SettingsInterface {
      */
     public function print_section_info()
     {
-        print 'Please enter your configuration settings for the plugin. Below are some wordpress values that are being filtered.<br>If any of these seem wrong please report them to the plugin author<br>';
+        print '<p>Please enter your configuration settings for the plugin. Below are some wordpress values that are being filtered.<br>If any of these seem wrong please report them to the plugin author</p><p>';
         print 'Wordpress site_url: ' . site_url() . '<br>';
         print 'Wordpress admin_url: ' . admin_url() . '<br>';
-        print 'Current listening port: ' . $_SERVER['SERVER_PORT'];
+        print 'Current listening port: ' . $_SERVER['SERVER_PORT'] . '<br>';
+        print 'Connected server IP: ' . $_SERVER['REMOTE_ADDR'];
+        print '</p>';
+    }
+
+    public function print_section_servers() {
+        print '<p>This section allows you to specify server specific configurations</p>';
+        print 'Connected server IP: ' . $_SERVER['REMOTE_ADDR'];
     }
 
     /**
@@ -183,7 +208,7 @@ class WPSA_SettingsInterface {
         );
     }
 
-	public function activate()
+	public function activate_callback()
     {
         printf(
             'Yes <input type="radio" id="activate" name="'.self::_ID.'[activate]" value="1" %s/> / No <input type="radio" id="activate" name="'.self::_ID.'[activate]" value="0" %s/> / Testing Mode <input type="radio" id="activate" name="'.self::_ID.'[activate]" value="2" %s/>',
@@ -207,6 +232,38 @@ class WPSA_SettingsInterface {
             (isset( $this->options['ssl_mode'])  && $this->options['ssl_mode'] == 1) ?'checked' : '',
             (!isset( $this->options['ssl_mode']) || $this->options['ssl_mode'] == 0) ?'checked' : ''
         );
+    }
+
+    public function servers_callback() {
+
+        //this is done for as many IPs as there are in addition to the current IP address
+        $servers = $this->opts->getServers();
+        print_r($servers);
+
+        $def = $this->opts->getDefaultServer();
+        $serv = $this->opts->getThisServer();
+        ?>
+        <h4>Default</h4>
+        <?php
+
+        $this->build_server_form( $def, true );
+        $this->build_server_form( $serv, true );
+
+        foreach( $servers as $server ) {
+            $this->build_server_form( $server );
+        }
+
+    }
+
+    private function build_server_form( $server, $override=false ) {
+
+        // If override is false we want to throw out special ones
+        if (!$override) {
+            if ($server->isDefaultServer() || $server->isThisServer()) return;
+        }
+
+        echo $server->getIP();
+
     }
 
 }
