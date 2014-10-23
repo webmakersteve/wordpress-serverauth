@@ -109,6 +109,8 @@ class WPSA_Options {
         else return false;
     }
 
+    const DEFAULT_PORT = 8080;
+
     /**
      * Getter for port option.
      *
@@ -117,9 +119,9 @@ class WPSA_Options {
 
     public function getPort() {
         if (isset($this->options['id_port'])) {
-            if (strlen($this->options['id_port']) < 2) return NULL;
+            if (strlen($this->options['id_port']) < 2) return self::DEFAULT_PORT;
             else return $this->options['id_port'];
-        } else return NULL;
+        } else return self::DEFAULT_PORT;
     }
 
     /**

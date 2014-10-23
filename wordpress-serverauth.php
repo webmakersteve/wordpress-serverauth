@@ -9,6 +9,7 @@ Version: 1.1
 
 //let's bootstrap it
 require('settings.php');
+Options::setString( 'wp_serverauthops' );
 
 if (is_admin()) {
     require('interface.php');
@@ -18,7 +19,7 @@ $options = WPSA_Options::getInstance();
 
 //We just use redirects!
 $GLOBALS['wpsa_bypass'] = false;
-define('WPSA_PRIVILEDGED_PORT', 8080);
+define('WPSA_PRIVILEDGED_PORT', $options->getPort());
 
 function wpsa_get_url_on_port( $port=false, $path=true ) {
     if (!$port) $port = WPSA_PRIVILEGED_PORT;
