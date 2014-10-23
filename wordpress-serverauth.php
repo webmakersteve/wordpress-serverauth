@@ -9,31 +9,36 @@ Version: 1
 
 //We just use redirects!
 $GLOBALS['wpsa_bypass'] = false;
+define('WPSA_PRIVILEDGED_PORT', 8080);
 
-function wpsa_get_url_on_port( $port=8086 ) {
+function wpsa_get_url_on_port( $port=false, $path=true ) {
+    if (!$port) $port = WPSA_PRIVILEGED_PORT;
+    
     $pageURL = 'http';
     if ($_SERVER['HTTPS'] == 'on') $pageURL .= 's';
     $pageURL .= "://";
-    $pageURL .= sprintf("%s:%d%s", $_SERVER['SERVER_NAME'], $port, $_SERVER['REQUEST_URI']);
+    $pageURL .= sprintf("%s:%d", $_SERVER['SERVER_NAME'], $port);
+    if ($path) $pageURL .= $_SERVER['REQUEST_URI'];
     return $pageURL;
 }
-
-define('PRIVILEGED_PORT', 8086);
 
 function wpsa_enforce() {
 
     if (wpsa_should_protect()) {
 
         if (!wpsa_is_on_privileged_port()) {
-            //redirect to port 8080
-            //header(sprintf("Location: %s", wpsa_get_url_on_port(PRIVILEGED_PORT)));
+            //redirect to port 8080 for the redirection mechanism
+            //header(sprintf("Location: %s", wpsa_get_url_on_port(WPSA_PRIVILEDGED_PORT)));
+            
+            //otherwise, for the 404 route, just throw a 404.
             wpsa_throw_404();
         }
     }
 }
 
-function wpsa_is_on_privileged_port($port=8086) {
-    return $_SERVER['SERVER_PORT'] == PRIVILEGED_PORT;
+function wpsa_is_on_privileged_port($port=false) {
+    if (!$port) $port = WPSA_PRIVILEGED_PORT;
+    return $_SERVER['SERVER_PORT'] == $port;
 }
 
 function wpsa_should_protect() {
@@ -60,5 +65,19 @@ function wordpress_serverauth_activate() {
     $wpsa_bypass = true; //dont do it on activation
 }
 register_activation_hook( __FILE__, 'wordpress_serverauth_activate' );
+
+
+function wpsa_site_url($url) {
+   //check if we are on a weird port
+   if ($port = $_SERVER['SERVER_PORT']) {
+        if ($port == WPSA_PRIVILEGED_PORT) {
+                return wpsa_get_url_on_port($port, false);
+                //we just want to get the current url instead
+        }
+   }
+   return $url;
+}
+
+add_filter( 'site_url' , 'wpsa_site_url' );
 
 add_action('wp_loaded', 'wpsa_enforce');
