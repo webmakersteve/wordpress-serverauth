@@ -12,6 +12,7 @@ class WPSA_Plugin {
   private $opts;
   private $bypass;
   private $port;
+    private $listening_port;
 
   public function __construct() {
     require('settings.php');
@@ -23,6 +24,7 @@ class WPSA_Plugin {
 
     $this->opts = WPSA_Options::getInstance();
     $this->port = $this->opts->getPort();
+      $this->listening_port = $_SERVER['SERVER_PORT'];
 
     register_activation_hook( __FILE__, array($this, 'activate'));
 
@@ -76,7 +78,7 @@ class WPSA_Plugin {
               wp_redirect( $this->getUrlOnPort(admin_url(), $this->port));
               exit;
           }
-          
+
       } else {
         //we're on the privileged port so we're good
         return false;

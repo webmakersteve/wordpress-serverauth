@@ -127,6 +127,14 @@ class WPSA_SettingsInterface {
             'port'
         );
 
+        add_settings_field(
+            'ssl_mode',
+            'SSL Mode',
+            array( $this, 'ssl_mode_callback' ),
+            self::_GRP,
+            'port'
+        );
+
     }
 
     /**
@@ -136,7 +144,7 @@ class WPSA_SettingsInterface {
      */
     public function sanitize( $input )
     {
-		    $old = WPSA_Options::getInstance()->toArray();
+        $old = WPSA_Options::getInstance()->toArray();
         $new_input = array();
         if( isset( $input['id_port'] ) )
             $new_input['id_port'] = ( $input['id_port'] );
@@ -146,6 +154,9 @@ class WPSA_SettingsInterface {
 
         if( isset( $input['protection'] ) && in_array($input['protection'], array(0,1)))
             $new_input['protection'] = ( $input['protection'] );
+
+        if (isset( $input['ssl_mode']) && in_array( $input['ssl_mode'], array(0,1)))
+            $new_input['ssl_mode'] = ( $input['ssl_mode'] );
 
         return $new_input;
     }
@@ -157,7 +168,8 @@ class WPSA_SettingsInterface {
     {
         print 'Please enter your configuration settings for the plugin. Below are some wordpress values that are being filtered.<br>If any of these seem wrong please report them to the plugin author<br>';
         print 'Wordpress site_url: ' . site_url() . '<br>';
-        print 'Wordpress admin_url: ' . admin_url();
+        print 'Wordpress admin_url: ' . admin_url() . '<br>';
+        print 'Current listening port: ' . $_SERVER['SERVER_PORT'];
     }
 
     /**
@@ -187,6 +199,15 @@ class WPSA_SettingsInterface {
             (isset( $this->options['protection'])  && $this->options['protection'] == 1) ?'checked' : '',
       (!isset( $this->options['protection']) || $this->options['protection'] == 0) ?'checked' : '',
       (isset( $this->options['protection']) && $this->options['protection'] == 2) ?'checked' : ''
+        );
+    }
+    
+    public function ssl_mode_callback() {
+        printf(
+            '404 <input type="radio" id="ssl_mode" name="'.self::_ID.'[ssl_mode]" value="1" %s/> / Redirect <input type="radio" id="ssl_mode" name="'.self::_ID.'[ssl_mode]" value="0" %s/>',
+            (isset( $this->options['ssl_mode'])  && $this->options['ssl_mode'] == 1) ?'checked' : '',
+            (!isset( $this->options['ssl_mode']) || $this->options['ssl_mode'] == 0) ?'checked' : '',
+            (isset( $this->options['ssl_mode']) && $this->options['ssl_mode'] == 2) ?'checked' : ''
         );
     }
 
