@@ -7,22 +7,39 @@ Author: Stephen Parente
 Version: 1.1
 */
 
-//let's bootstrap it
-require('settings.php');
-Options::setString( 'wp_serverauthops' );
+class WPSA_Plugin {
 
-if (is_admin()) {
+  private $opts;
+  private $bypass;
+  private $port;
+
+  public function __construct() {
+    require('settings.php');
+    WPSA_Options::setString( 'wp_serverauthops' );
+
+    if (is_admin()) {
+      $this->loadInterface();
+    }
+
+    $this->opts = WPSA_Options::getInstance();
+    $this->port = $wpsa_options->getPort();
+
+    register_activation_hook( __FILE__, array($this, 'activate'));
+    if ($this->opts->isOn()) {
+        add_filter( 'site_url' , array($this, 'filterSiteUrl') );
+        add_action('wp_loaded', array($this, 'enforce') );
+    }
+
+  }
+
+  private function loadInterface() {
     require('interface.php');
-}
+  }
 
-$options = WPSA_Options::getInstance();
-
-//We just use redirects!
-$GLOBALS['wpsa_bypass'] = false;
-define('WPSA_PRIVILEDGED_PORT', $options->getPort());
-
-function wpsa_get_url_on_port( $port=false, $path=true ) {
-    if (!$port) $port = WPSA_PRIVILEGED_PORT;
+  private function getUrlOnPort($port=false,$path=true) {
+    if (!$port) {
+      $port = $this->port;
+    }
 
     $pageURL = 'http';
     if ($_SERVER['HTTPS'] == 'on') $pageURL .= 's';
@@ -30,66 +47,84 @@ function wpsa_get_url_on_port( $port=false, $path=true ) {
     $pageURL .= sprintf("%s:%d", $_SERVER['SERVER_NAME'], $port);
     if ($path) $pageURL .= $_SERVER['REQUEST_URI'];
     return $pageURL;
-}
 
-function wpsa_enforce() {
+  }
 
-    if (wpsa_should_protect()) {
+  public function enforce() {
 
-        if (!wpsa_is_on_privileged_port()) {
-            //redirect to port 8080 for the redirection mechanism
-            //header(sprintf("Location: %s", wpsa_get_url_on_port(WPSA_PRIVILEDGED_PORT)));
+    if ($this->shouldProtect()) {
 
-            //otherwise, for the 404 route, just throw a 404.
-            wpsa_throw_404();
+      if (!$this->isOnPrivilegedPort()) {
+        //redirect to port 8080 for the redirection mechanism
+        if ($this->opts->isRedirectMode()) {
+          wp_redirect( $this->getUrlOnPort());
+          exit;
+        } elseif ($this->opts->is404Mode()) {
+          //otherwise, for the 404 route, just throw a 404.
+          return $this->throw404();
         }
+
+        return false;
+
+      } else {
+        //we're on the privileged port so we're good
+        return false;
+      }
+
+    } else {
+      //we should not protect this place
+      return false;
     }
-}
 
-function wpsa_is_on_privileged_port($port=false) {
-    if (!$port) $port = WPSA_PRIVILEGED_PORT;
-    return $_SERVER['SERVER_PORT'] == $port;
-}
+  }
 
-function wpsa_should_protect() {
-    global $pagenow, $wpsa_bypass;
-    if ($wpsa_bypass) return false;
+  private function isOnPrivilegedPort($port=false) {
+    if (!$port) {
+      $port = $this->port;
+    }
+
+    return $_SERVER['SERVER_PORT'] == $port; //dont need to proto this for LB configs
+
+  }
+
+  private function shouldProtect() {
+    global $pagenow;
+    if ($this->bypass) return false;
 
     return (is_admin() && !defined('DOING_AJAX')) ||
       in_array( $pagenow, array( 'wp-login.php', 'wp-register.php' ));
-}
 
-function wpsa_throw_404() {
+  }
+
+  private function throw404() {
     global $wp_query;
-    wpsa_404_header();
+    $this->header404();
     if ($wp_query)
         $wp_query->set_404();
     require get_404_template();
     exit;
+  }
+
+  private function header404() {
+    header("HTTP/1.0 404 Not Found");
+  }
+
+  public function activate() {
+    $this->bypass = true;
+
+  }
+
+  public function filterSiteUrl($url) {
+    //check if we are on a weird port
+    if ($port = $_SERVER['SERVER_PORT']) {
+         if ($port == $this->port) {
+             return $this->getUrlOnPort($port, false);
+             //we just want to get the current url instead
+         }
+    }
+    return $url;
+  }
+
 }
 
-function wpsa_404_header() {
-	header("HTTP/1.0 404 Not Found");
-}
-
-function wordpress_serverauth_activate() {
-    global $wpsa_bypass;
-    $wpsa_bypass = true; //dont do it on activation
-}
-register_activation_hook( __FILE__, 'wordpress_serverauth_activate' );
-
-
-function wpsa_site_url($url) {
-   //check if we are on a weird port
-   if ($port = $_SERVER['SERVER_PORT']) {
-        if ($port == WPSA_PRIVILEGED_PORT) {
-                return wpsa_get_url_on_port($port, false);
-                //we just want to get the current url instead
-        }
-   }
-   return $url;
-}
-
-add_filter( 'site_url' , 'wpsa_site_url' );
-
-add_action('wp_loaded', 'wpsa_enforce');
+$WPSA_Main = new WPSA_Plugin();
