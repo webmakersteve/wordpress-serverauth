@@ -238,7 +238,7 @@ class WPSA_Server_Options {
         $defaults = array(
             'ip' => 'default',
             'on' => true,
-            'allow_admin' => true,
+            'admin' => true,
             'url' => ''
         );
         foreach($data as $k=>$v) {
@@ -247,7 +247,7 @@ class WPSA_Server_Options {
 
         $this->ip = $defaults['ip'];
         $this->on = $defaults['on'];
-        $this->allow_admin = $defaults['allow_admin'];
+        $this->allow_admin = $defaults['admin'];
         $this->site_url = $defaults['url'];
 
     }
