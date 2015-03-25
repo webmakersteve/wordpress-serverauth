@@ -110,6 +110,7 @@ class WPSA_Options {
     }
 
     const DEFAULT_PORT = 8080;
+    const DEFAULT_HOSTNAME = 'localhost';
 
     /**
      * Getter for port option.
@@ -122,6 +123,19 @@ class WPSA_Options {
             if (strlen($this->options['id_port']) < 2) return self::DEFAULT_PORT;
             else return $this->options['id_port'];
         } else return self::DEFAULT_PORT;
+    }
+
+    /**
+     * Getter for hostname option.
+     *
+     * @return string|NULL
+     */
+
+    public function getHostname() {
+        if (isset($this->options['id_hostname'])) {
+            if (strlen($this->options['id_hostname']) < 2) return self::DEFAULT_HOSTNAME;
+            else return $this->options['id_hostname'];
+        } else return self::DEFAULT_HOSTNAME;
     }
 
     /**
@@ -197,6 +211,14 @@ class WPSA_Options {
         return !$this->isSSLOn();
     }
 
+    public function isPrivilegedHostnameMode() {
+        return $this->options['mode'] == 'hostname';
+    }
+
+    public function isPrivilegedPortMode() {
+        return $this->options['mode'] != 'hostname';
+    }
+
     public function getServers() {
         if (isset($this->options['servers']) && $this->options['servers']) {
             $servers = $this->options['servers'];
@@ -222,7 +244,9 @@ class WPSA_Options {
 
     public function getServer( $ip ) {
         $servers = $this->getServers();
-        return $servers[$ip];
+        if (array_key_exists($ip, $servers))
+            return $servers[$ip];
+        else return new WPSA_Server_Options();
     }
 
 }
@@ -239,10 +263,16 @@ class WPSA_Server_Options {
             'ip' => 'default',
             'on' => true,
             'admin' => true,
-            'url' => ''
+            'url' => '',
+            'mode' => 'port'
         );
-        foreach($data as $k=>$v) {
-            $defaults[$k] = $v;
+
+        if ($data) {
+
+            foreach($data as $k=>$v) {
+                $defaults[$k] = $v;
+            }
+
         }
 
         $this->ip = $defaults['ip'];
@@ -279,4 +309,5 @@ class WPSA_Server_Options {
     public function setIP($ip) {
         $this->ip = $ip;
     }
+
 }

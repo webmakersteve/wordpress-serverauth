@@ -106,6 +106,22 @@ class WPSA_SettingsInterface {
         );
 
         add_settings_field(
+             'id_mode', // ID
+             'Protection Mode', // Title
+             array( $this, 'mode_callback' ), // Callback
+             self::_GRP,
+             'port' // Page
+         );
+
+        add_settings_field(
+             'id_hostname', // ID
+             'Hostname', // Title
+             array( $this, 'hostname_callback' ), // Callback
+             self::_GRP,
+             'port' // Page
+         );
+
+        add_settings_field(
              'id_port', // ID
              'Port Number', // Title
              array( $this, 'port_number_callback' ), // Callback
@@ -155,6 +171,12 @@ class WPSA_SettingsInterface {
 
     }
 
+    private function input_modes() {
+
+        return array('hostname', 'port');
+
+    }
+
     /**
      * Sanitize each setting field as needed
      *
@@ -167,7 +189,13 @@ class WPSA_SettingsInterface {
         if( isset( $input['id_port'] ) )
             $new_input['id_port'] = ( $input['id_port'] );
 
-		    if( isset( $input['activate'] ) && in_array($input['activate'], array(0,1,2)))
+        if( isset( $input['id_hostname'] ) )
+            $new_input['id_hostname'] = ( $input['id_hostname'] );
+
+        if( isset( $input['mode'] ) && in_array( $input['mode'], $this->input_modes() ) )
+            $new_input['mode'] = ( $input['mode'] );
+
+		if( isset( $input['activate'] ) && in_array($input['activate'], array(0,1,2)))
             $new_input['activate'] = ( $input['activate'] );
 
         if( isset( $input['protection'] ) && in_array($input['protection'], array(0,1)))
@@ -208,6 +236,22 @@ class WPSA_SettingsInterface {
     /**
      * Get the settings option array and print one of its values
      */
+
+    public function hostname_callback() {
+        printf(
+            '<input type="text" id="id_hostname" name="'.self::_ID.'[id_hostname]" value="%s" />',
+            isset( $this->options['id_hostname'] ) ? esc_attr( $this->options['id_hostname']) : ''
+        );
+    }
+
+    public function mode_callback() {
+        printf(
+            'Hostname Mode <input type="radio" id="mode" name="'.self::_ID.'[mode]" value="hostname" %s /> /
+             Port Mode <input type="radio" id="mode" name="'.self::_ID.'[mode]" value="port" %s />',
+            ( isset( $this->options['mode'] ) && $this->options['mode'] == 'hostname' ) ? 'checked' : '',
+            (( isset( $this->options['mode'] ) && $this->options['mode'] != 'hostname' ) || !isset($this->options['mode'])) ? 'checked' : ''
+        );
+    }
 
     public function port_number_callback() {
         printf(

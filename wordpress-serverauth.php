@@ -24,7 +24,8 @@ class WPSA_Plugin {
 
     $this->opts = WPSA_Options::getInstance();
     $this->port = $this->opts->getPort();
-      $this->listening_port = $_SERVER['SERVER_PORT'];
+    $this->hostname = $this->opts->getHostname();
+    $this->listening_port = $_SERVER['SERVER_PORT'];
 
     register_activation_hook( __FILE__, array($this, 'activate'));
 
@@ -68,15 +69,20 @@ class WPSA_Plugin {
 
     if ($this->shouldProtect()) {
 
-      if (!$this->isOnPrivilegedPort()) {
-        //redirect to port 8080 for the redirection mechanism
+      if ( ( $this->opts->isPrivilegedPortMode() && !$this->isOnPrivilegedPort()) || 
+           ( $this->opts->isPrivilegedHostnameMode() && !$this->isOnPrivilegedHostname()) ) {
+          //redirect to port 8080 for the redirection mechanism
 
           if ($this->opts->is404Mode()) {
               //otherwise, for the 404 route, just throw a 404.
               return $this->throw404();
           } else {
+            if ($this->opts->isPrivilegedPortMode()) {
               wp_redirect( $this->getUrlOnPort(admin_url(), $this->port));
-              exit;
+            } else {
+              wp_redirect( admin_url() );
+            }
+            exit;
           }
 
       } else {
@@ -98,6 +104,14 @@ class WPSA_Plugin {
 
     return $_SERVER['SERVER_PORT'] == $port; //dont need to proto this for LB configs
 
+  }
+
+  private function isOnPrivilegedHostname($hostname=false) {
+    if (!$hostname) {
+      $hostname = $this->hostname;
+    }
+
+    return $_SERVER['SERVER_NAME'] == $hostname;
   }
 
   private function shouldProtect() {
