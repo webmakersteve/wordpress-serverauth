@@ -1,0 +1,20 @@
+web:
+  image: 'wordpress'
+  ports:
+    - "8081:80"
+  links:
+    - mysql
+  volumes:
+    - ./:/var/www/html/wp-content/plugins/wordpress-serverauth
+  environment:
+    WORDPRESS_DB_HOST: mysql
+    WORDPRESS_DB_USER: wordpress
+    WORDPRESS_DB_PASSWORD: tB@v!fCs
+    WORDPRESS_DB_USER: root
+mysql:
+  image: mysql:latest
+  expose:
+    - "3306"
+  environment:
+    MYSQL_DATABASE: wordpress
+    MYSQL_ROOT_PASSWORD: tB@v!fCs
