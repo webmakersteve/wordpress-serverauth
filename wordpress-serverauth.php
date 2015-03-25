@@ -4,7 +4,7 @@
 Plugin Name: WordPress Server Auth
 Description: Restricts WP Admin Access to a specific port, to allow Proper apache configuration
 Author: Stephen Parente
-Version: 1.1
+Version: 1.2
 */
 
 class WPSA_Plugin {
