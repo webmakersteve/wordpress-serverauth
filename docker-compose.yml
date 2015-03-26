@@ -1,7 +1,7 @@
 web:
   image: 'wordpress'
   ports:
-    - "8081:80"
+    - "80:80"
   links:
     - mysql
   volumes:

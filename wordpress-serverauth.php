@@ -143,6 +143,11 @@ class WPSA_Plugin {
 
   public function filterSiteUrl($url) {
     //check if we are on a weird port
+    $parsed = parse_url($url);
+    
+    if ($_SERVER['SERVER_NAME'] == $this->hostname)
+    	$parsed['host'] = $this->hostname;
+    $url = $this->buildUrl($parsed);
     if ($port = $_SERVER['SERVER_PORT']) {
          if ($port == $this->port) {
              return $this->getUrlOnPort($url, $port, false);
